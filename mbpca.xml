@@ -58,8 +58,8 @@
 
   <tests>
     <test>
-      <param name="dataMatrix_in" value="choo_datamatrix.csv"/>
-      <param name="sampleMetadata_in" value="meta_exp.csv"/>
+      <param name="dataMatrix_in" value="factor_blking_datamatrix.csv"/>
+      <param name="sampleMetadata_in" value="factor_blking_meta.csv"/>
       <param name="instrument" value="no" />
       <param name="instMetadata_in" value="NA" /> 
       <param name="no_pcs" value="2" />
@@ -71,10 +71,10 @@
       <param name="file_figures" value = "MB_PCA_Figures.pdf" /> 
     </test>
     <test>
-      <param name="dataMatrix_in" value="data_sourceblocking.csv" />
-      <param name="sampleMetadata_in" value="meta_sourceblocking_sample.csv" />
+      <param name="dataMatrix_in" value="datasource_blking_data.csv" />
+      <param name="sampleMetadata_in" value="datasource_blking_samplemeta.csv" />
       <param name="instrument" value="yes" />
-      <param name="instMetadata_in" value="meta_sourceblocking_datasource.csv" />
+      <param name="instMetadata_in" value="datasource_blking_sourcemeta.csv" />
       <param name="no_pcs" value="2" />
       <param name="model_name" value="consensus" />
       <param name="information" value = "Running_log.txt" />
