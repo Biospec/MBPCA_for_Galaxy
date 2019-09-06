@@ -38,7 +38,7 @@
 		<param name="instMetadata_in" type="data" format="csv" label="Meta data for different data sources" />
     	</when>
 	<when value="no">
-		<param name="instMetadata_in" type="text" value = "NA" label="Not applicable"/>
+		<param name="instMetadata_in" type="text" value = "NA" label="Not applicable, ignore this"/>
 	</when>
     </conditional>
     <param name="model_name" label="Chose type of multiblock model" type="select" help="">
@@ -87,259 +87,96 @@
 
   
   <help>
-    
-.. class:: infomark
-    
-**Tool updates**
-    
-See the **NEWS** section at the bottom of this page
-    
----------------------------------------------------
+
+
+========================
+Multiblock PCA (MB-PCA)
+========================
 
 .. class:: infomark
     
-**Authors** Marie Tremblay-Franco (W4M Core Development Team, MetaboHUB Toulouse, AXIOM) and Yann Guitton (W4M Core Development Team, Laberca, UM1329)
-    
----------------------------------------------------
-    
-.. class:: infomark
-
-**References**
-| R Core Team (2013). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria (http://www.r-project.org)
-| Tim Dorscheidt (2013). MetStaT: Statistical metabolomics tools. R package version 1.0. https://CRAN.R-project.org/package=MetStaT
-|
-    
-============
-A-SCA
-============
+**Authors** Yun Xu (Metaboflow, University of Liverpool) 
     
 -----------
 Description
 -----------
     
-| ASCA splits variance into independent blocks according to the experimental factors and performs multivariate analysis (SCA) of each block
+| This tool provides mutliblock PCA models which can be used to either "fuse" multiple and related data sets together to provide more information for the modelling (data source blocking) or analyse the data from a balanced multiple factors cross-over experiment design to provide more interpretable results (factor blocking).
 |
 
------------------
-Workflow position
------------------
-    
-.. image:: images/asca_workflowPositionImage.png
-        :width: 600
+
 
     
 -----------
 Input files
 -----------
  
-+----------------------------+---------+
-| Parameter : num + label    |  Format |
-+============================+=========+
-| 1 : Data matrix file       | tabular |
-+----------------------------+---------+
-| 2 : Sample metadata file   | tabular |
-+----------------------------+---------+
-| 3 : Variable metadata file | tabular |
-+----------------------------+---------+
++-------------------------------+---------+
+| Parameters:                   |  Format |
++===============================+=========+
+| 1 : Data matrix file          | csv     |
++-------------------------------+---------+
+| 2 : Sample metadata file      | csv     |
++-------------------------------+---------+
+| 3 : Data source metadata file | csv/NA  |
++-------------------------------+---------+
 
-
-| The **required formats** for the dataMatrix, sampleMetadata, and variableMetadata files are described in the **HowTo** entitled 'Format Data For Postprocessing' available on the main page of Workflow4Metabolomics.org (http://web11.sb-roscoff.fr/download/w4m/howto/w4m_HowToFormatDataForPostprocessing_v02.pdf)
-
+|
+| For data source blocking, different data matrices shall placed side-by-side, first column shall be unique sample ids, e.g. (1,2,3,...), first row shall be data source labels (e.g. ESI+, ESI-, GC-MS etc) for each variable and saved as a .csv file. In addition, two meta files shall be provided, both in .csv format. One is sample metadata file in which sample labels shall be provided and will be used for labelling data points in the figures; another is data source metadata file in which a column of labels indicating the origin of each variable (e.g. ESI+, ESI-, GC-MS etc) shall be provided and will be used for blocking. To ensure that all the files are to be imported correctly, better manually set "Type" to "csv" instead of "Auto-detect" when using Galaxy "Get Data" tool.
+|
+| For factor blocking, data source metadata shall be ignored. The data matrix shall be placed as each column is a sample and each row is a variable. The first column shall be a unique description of each variable and will be used to identify PCA loadings; The first row shall be sample labels. The sample meta data shall contain experimental design information, each column is a factor, the header of each column is the name of the factor and the elements below are the names of levels of the samples for this factor. 
+|
+| Check https://github.com/Biospec/MBPCA_for_Galaxy/tree/master/test-data for examples.
+|
+|
 
 ----------
 Parameters
 ----------
 	  
-Data matrix file
-	| variable x sample **dataMatrix** tabular separated file of the numeric data matrix, with . as decimal, and NA for missing values; the table must not contain metadata apart from row and column names; the row and column names must be identical to the rownames of the sample and variable metadata, respectively (see below)
+Multiple data sources blocking?
+	| "yes" for data source blocking and data source metafile shall be provided, "no" for factor blocking.
 	|
 
-Sample metadata file
-	| sample x metadata **sampleMetadata** tabular separated file of the numeric and/or character sample metadata, with . as decimal and NA for missing values
-	|
-	
-Variable metadata file
-	| variable x metadata **variableMetadata** tabular separated file of the numeric and/or character variable metadata, with . as decimal and NA for missing values
-	|
+Chose type of multiblock model
+	| Two MB-PCA models supported: concensus PCA and hierachical PCA, see Westerhuis, J. A. et al. (1998) for details.	
+	|	
 
-Factor1
-	| Name of the sampleMetadata column containing the 1st factor for A-SCA
-	|
-
-Factor2
-	| Name of the sampleMetadata column containing the 2nd factor for A-SCA
-	|
-
-Scaling (default = none)
-	| Mean-centering followed either by pareto scaling (**pareto**), or unit-variance scaling (**UV**)
-	| 
-
-Permutation testing for A-SCA parameters: Number of permutations (default = 100)
-	| Number of random permutation on the results from ASCA. Calculate by repeating the ASCA analysis many times with permutated samples.
-	| 	
-	
-Threshold
-	| p-value significance threshold for permutation test
+The number of Principal Components
+	| The number of principal components to be extracted, 2 by default. The output figures would always plot PC 1 vs. PC 2, even this parameter is set to be higher than 2. The scores and loadings of all PCs will be saved to the resulting files.
 	|
 
 ------------
 Output files
 ------------
 
-sampleMetadata_out.tabular
-	| sampleMetadata data file; may be identical to the input sampleMetadata in case no renaming of sample names nor re-ordering of samples (see the 'information' file for the presence/absence of modifications)
+MB_PCA_Super_scores
+	| The super scores of the model.
 	|
 
-variableMetadata_out.tabular
-	| variableMetadata data file; may be identical to the input variableMetadata in case no renaming of variable names nor re-ordering of variables (see the 'information' file for the presence/absence of modifications)
+MB_PCA_Block_scores
+	| The block scores of the model.
+	|
+
+MB_PCA_loadings
+	| The block loadings of the model.
 	|
 
 figure.pdf
-	| Scree and score plots for significant parameter(s)
+	| The super and block scores plots. 
 	| 
 
-information.txt
-	| Text file with all messages when error(s) in formats are detected
+MB_PCA_log.txt
+	| Text file with all messages, check if the numbers of samples, variables and blocks match the expectation or any error message if the tool failed to run.
 	|
     
----------------------------------------------------
-
----------------
-Working example
----------------
-
-.. class:: infomark
-
-	| Data used in the following example comes from the Biosystems Data Analysis Group. They ayre included in the ASCA software(http://www.bdagroup.nl/content/Downloads/software/software.php).
-	| Two features were measured on 12 individuals, using a two factor-experimental design. The 1st factor has 2 levels and the 2nd factor has 3 levels.
-	| 
-
-Input files
------------
-+---------------------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+
-| Datamatrix          |   Ind1   | Ind2     | Ind3     | Ind4     | Ind5     | Ind6     | Ind7     | Ind8     | Ind9     | Ind10    | Ind11    | Ind12    |
-+=====================+==========+==========+==========+==========+==========+==========+==========+==========+==========+==========+==========+==========+
-| V1                  |   1.00   | 3.00     | 2.00     | 1.00     | 2.00     | 2.00     | 4.00     | 6.00     | 5.00     | 5.00     | 6.00     | 5.00     |
-+---------------------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+
-| V2                  |   0.60   | 0.40     | 0.70     | 0.80     | 0.01     | 0.80     | 1.00     | 2.00     | 0.90     | 1.00     | 2.00     | 0.70     |
-+---------------------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+
-
----------------------------------------------------
-
-+--------------------+----------+----------+
-| sampleMetadata     |    F1    |    F2    |
-+====================+==========+==========+
-| Ind1               |    1     |    1     |
-+--------------------+----------+----------+
-| Ind2               |    1     |    1     |
-+--------------------+----------+----------+
-| Ind3               |    1     |    2     |
-+--------------------+----------+----------+
-| Ind4               |    1     |    2     |
-+--------------------+----------+----------+
-| Ind5               |    1     |    3     |
-+--------------------+----------+----------+
-| Ind6               |    1     |    3     |
-+--------------------+----------+----------+
-| Ind7               |    2     |    1     |
-+--------------------+----------+----------+
-| Ind8               |    2     |    1     |
-+--------------------+----------+----------+
-| Ind9               |    2     |    2     |
-+--------------------+----------+----------+
-| Ind10              |    2     |    2     |
-+--------------------+----------+----------+
-| Ind11              |    2     |    3     |
-+--------------------+----------+----------+
-| Ind11              |    2     |    3     |
-+--------------------+----------+----------+
-
----------------------------------------------------
-
-+--------------------+----------+
-|  Variablemetadata  |  Number  |
-+====================+==========+
-| V1                 |    1     |
-+--------------------+----------+
-| V2                 |    2     |
-+--------------------+----------+
-
----------------------------------------------------
-
-Parameters
-----------
-	| Name of the sampleMetadata column containing the 1st factor for A-SCA: F1
-	| Name of the sampleMetadata column containing the 2nd factor for A-SCA: F2
-	| Scaling to apply to dataMatrix: none
-	| Number of permutation to perform to compute factor significance: 500
-	| Threshold for factor significance (permutation test): 0.05
-	| 
-
-Output files
-------------
-    | **1) Example of a ASCA_BDAGroup_ASCA_samplemetadata.tsv: tsv file** including PC1 and PC2 scores from F1 PCA, F2 PCA and F1xF2 PCA 
-
-
-	
-+--------------------+----------+----------+-------------+-------------+-------------+-------------+-------------------+-------------------+
-| sampleMetadata     |    F1    |    F2    | F1_XSCOR-p1 | F1_XSCOR-p2 | F2_XSCOR-p1 | F2_XSCOR-p2 | Interact_XSCOR-p1 | Interact_XSCOR-p1 |
-+====================+==========+==========+=============+=============+=============+=============+===================+===================+
-| Ind1               |    1     |    1     | -2.66136390 | 0.307505352 | 0.986520075 | -0.25138715 | -0.31885686       | -0.77109078       |
-+--------------------+----------+----------+-------------+-------------+-------------+-------------+-------------------+-------------------+
-| Ind2               |    1     |    1     | -0.74779084 | -0.30750535 | -0.99758505 | 0.070057773 | 0.719240017       | 0.950058502       |
-+--------------------+----------+----------+-------------+-------------+-------------+-------------+-------------------+-------------------+
-| Ind3               |    1     |    2     | -1.22618411 | -0.15375267 | -0.24288670 | 0.124191016 | -0.00883820       | 0.465391498       |
-+--------------------+----------+----------+-------------+-------------+-------------+-------------+-------------------+-------------------+
-
   
-
-    | **2) Example of a ASCA_BDAGroup_ASCA_variablemetadata.tsv: tsv file** including PC1 and PC2 loadings from F1 PCA, F2 PCA and F1xF2 PCA 
-
-	
-+--------------------+----------+-------------+-------------+-------------+-------------+-------------------+--------------------+
-|  variableMetadata  |  Number  | F1_XLOAD-p1 | F1_XLOAD-p2 | F2_XLOAD-p1 | F2_XLOAD-p2 | Interact_XLOAD-p1 | Interact_XLOAD-p1  |
-+====================+==========+=============+=============+=============+=============+===================+====================+
-| V1                 |    1     | 0.977759467 | -0.20972940 | -0.99814337 | 0.060908126 | 0.428703939       | 0.903445035        |
-+--------------------+----------+-------------+-------------+-------------+-------------+-------------------+--------------------+
-| V2                 |    2     | 0.977759467 | -0.30750535 | -0.06090812 | -0.99814337 | -0.90344503       | 0.428703939        |
-+--------------------+----------+-------------+-------------+-------------+-------------+-------------------+--------------------+
-
-
-
-    | **3) Example of a ASCA_information.txt: txt file** including % of explained variance and p-value of permutation test 
-
-
-+----------------------+-------------------------+---------------------+
-| ASCA_information.txt | % of explained variance | Permutation p-value |
-+======================+=========================+=====================+
-| F1                   | 81.71                   | 0.004               |
-+----------------------+-------------------------+---------------------+
-| F2                   | 1.29                    | 0.880               |
-+----------------------+-------------------------+---------------------+
-| Interaction          | 1.33                    | 0.962               |
-+----------------------+-------------------------+---------------------+
-| Residuals            | 15.67                   | -                   |
-+----------------------+-------------------------+---------------------+
-
-
-	| **4) Example of ASCA_figure.pdf: pdf file** including Scree, Score plot and barplot of leverage values only for significant factor(s)/interaction**
-	| Leverage: importance of a variable in the PCA model (Nueda et al. 2007)
-	
-	
-.. image:: BDAGroup_ASCA_figure.tif
-        :width: 600
-
-----
-NEWS
-----
-
-   
 </help>
   
   <citations>
-    <citation type="doi">10.1093/bioinformatics/bti476</citation>
-    <citation type="doi">10.1002/cem.952</citation>
-    <citation type="doi">10.1093/bioinformatics/btm251</citation>
+    <citation type="doi">10.1002/cem.811</citation>
+    <citation type="doi">10.1007/s11306-011-0361-9</citation>
+    <citation type="doi">10.1002/(SICI)1099-128X(199809/10)12%3A5%3C301%3A%3AAID-CEM515%3E3.0.CO%3B2-S</citation>
   </citations>
   
 </tool>
