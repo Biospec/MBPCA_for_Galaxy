@@ -38,7 +38,7 @@
 		<param name="instMetadata_in" type="data" format="csv" label="Meta data for different data sources" />
     	</when>
 	<when value="no">
-		<param name="instMetadata_in" type="text" value = "NA" label="Not applicable, ignore this"/>
+		<param name="instMetadata_in" type="hidden" value = "NA" />
 	</when>
     </conditional>
     <param name="model_name" label="Chose type of multiblock model" type="select" help="">

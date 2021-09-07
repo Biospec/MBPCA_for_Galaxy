@@ -45,24 +45,49 @@ model_type <- "multiblock PCA" ## module name
 
 cat("\nStart of the '", model_type, "' Galaxy module call: ",
     format(Sys.time(), "%a %d %b %Y %X"), "\n", sep="")
-
-data_mat <- t(as.matrix(read.csv(listArguments[["dataMatrix_in"]], 
-                                 header = TRUE,
-                                 row.names = 1)))
-
 if (listArguments[["instrument"]] == "no" | listArguments[["instMetadata_in"]] == "NA") instrument = FALSE else  instrument = TRUE
-
 # If it is data source blocking, obtain data source info from a different meta file
 if (instrument){
   meta <- list()
   meta[[1]] <- read.csv(listArguments[["instMetadata_in"]], header = TRUE)
   tmp <- read.csv(listArguments[["sampleMetadata_in"]])
-  meta[[2]] <- tmp[, 1]
-  data_mat <- t(data_mat)} else {
-  meta <- read.csv(listArguments[["sampleMetadata_in"]], header = TRUE)
+  if (dim(tmp)[2] > 1) {
+    cat("\n Meta data contains more than two columns, only first column used for blocking. \n")
+    meta[[2]] <- tmp[, 1]
+  } else{
+    meta[[2]] <- tmp
   }
+  data_mat <- read.csv(listArguments[["dataMatrix_in"]], 
+                       header = TRUE,
+                       row.names = NULL)
+  xaxis <- colnames(data_mat)
+  data_mat <- as.matrix(data_mat)} else {
+  meta <- read.csv(listArguments[["sampleMetadata_in"]], header = TRUE)
+  data_mat <- read.csv(listArguments[["dataMatrix_in"]], 
+                       header = TRUE,
+                       row.names = NULL)
+  col_id <- colnames(data_mat)
+  if (col_id[1] == "xaxis"){
+    xaxis <- data_mat[, 1]
+    data_mat <- t(as.matrix(data_mat[, -1]))
+    col_id <- col_id[-1]
+  } else {
+    xaxis <- NULL
+    data_mat <- t(as.matrix(data_mat))
+  }
+}
 
-var_id <- colnames(data_mat)
+
+
+
+
+
+if (!is.null(xaxis)) {
+  var_id <- xaxis
+} else {
+  var_id <- 1:dim(data_mat)[2]
+}
+
 no_vars <- length(var_id)
 no_pcs <- as.numeric(listArguments[["no_pcs"]])
 
